@@ -30,7 +30,7 @@ func main() {
 	// The particular font (unicode.8x16.font) leaves the right-most column
 	// empty in its ASCII glyphs. We don't have to include that column in the
 	// generated glyphs, so we subtract one off the effective width.
-	const width, height, ascent = 8 , 16, 16-5
+	const width, height, ascent = 8, 16, 16 - 5
 
 	readFile := func(name string) ([]byte, error) {
 		return ioutil.ReadFile(filepath.FromSlash(path.Join("../testdata/vga", name)))

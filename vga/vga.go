@@ -5,14 +5,14 @@
 //go:generate go run gen.go
 
 // Package vga provides fixed-size font faces.
-package vga 
+package vga
 
 import (
 	"image"
 
+	draw2 "golang.org/x/image/draw"
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
-		draw2 "golang.org/x/image/draw"
 )
 
 // Range maps a contiguous range of runes to vertically adjacent sub-images of
@@ -28,8 +28,8 @@ type Range struct {
 }
 
 var (
-	kern = draw2.Interpolator(draw2.NearestNeighbor)
-	kern2 = draw2.Interpolator(draw2.CatmullRom)
+	kern     = draw2.Interpolator(draw2.NearestNeighbor)
+	kern2    = draw2.Interpolator(draw2.CatmullRom)
 	downkern = draw2.Interpolator(draw2.CatmullRom)
 )
 
@@ -50,7 +50,7 @@ var Face8x16 = &Face{
 	Advance: 8,
 	Width:   8,
 	Height:  16,
-	Ascent:  16-4,
+	Ascent:  16 - 4,
 	Descent: 4,
 	Mask:    mask8x16,
 	Ranges: []Range{
@@ -59,29 +59,29 @@ var Face8x16 = &Face{
 	},
 }
 
-func NewFace(size int) *Face{
+func NewFace(size int) *Face {
 	r := mask8x16.Bounds()
 	println(r.String())
-	r.Max.Y = size*96
-	r.Max.X = size/2
+	r.Max.Y = size * 96
+	r.Max.X = size / 2
 	println(r.String())
 
 	mask := image.NewAlpha(r)
 	kern.Scale(mask, mask.Bounds(), mask8x16, mask8x16.Bounds(), draw2.Src, nil)
-	mask.Stride = size/2
-	
+	mask.Stride = size / 2
+
 	f := &Face{
-	Advance: size/2,
-	Width:   size/2,
-	Height:  size,
-	Ascent:  size-(size/4),
-	Descent: (size/4),
-	Mask:    mask,
-	Ranges: []Range{
-		{'\u0020', '\u007f', 0},
-		{'\ufffd', '\ufffe', 95},
-	},
-}
+		Advance: size / 2,
+		Width:   size / 2,
+		Height:  size,
+		Ascent:  size - (size / 4),
+		Descent: (size / 4),
+		Mask:    mask,
+		Ranges: []Range{
+			{'\u0020', '\u007f', 0},
+			{'\ufffd', '\ufffe', 95},
+		},
+	}
 	return f
 }
 
