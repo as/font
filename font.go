@@ -9,12 +9,10 @@ import (
 	"github.com/golang/freetype/truetype"
 	gofont "golang.org/x/image/font"
 	"golang.org/x/image/font/basicfont"
-	"golang.org/x/image/font/gofont/gomono"
 	"golang.org/x/image/font/gofont/gomedium"
+	"golang.org/x/image/font/gofont/gomono"
 	"golang.org/x/image/font/gofont/goregular"
 	"golang.org/x/image/math/fixed"
-	
-	
 )
 
 type Face = gofont.Face
@@ -107,9 +105,9 @@ func NewTTF(data []byte, size int) *Font {
 	return ft
 }
 
-func FromFace(f Face, size int) *Font{
+func FromFace(f Face, size int) *Font {
 	ft := &Font{
-		Face: f,
+		Face:    f,
 		size:    size,
 		ascent:  2,
 		descent: +(size / 3),
@@ -125,12 +123,12 @@ func makefont(data []byte, size int) *Font {
 		panic(err)
 	}
 	ft := FromFace(truetype.NewFace(f,
-			&truetype.Options{
-				Size:              float64(size),
-				GlyphCacheEntries: 512 * 2,
-				SubPixelsX:        1,
-			}), size)
-	ft.data=data
+		&truetype.Options{
+			Size:              float64(size),
+			GlyphCacheEntries: 512 * 2,
+			SubPixelsX:        1,
+		}), size)
+	ft.data = data
 	ft.dy = ft.ascent + ft.descent + ft.size
 	return ft
 }
@@ -156,8 +154,8 @@ func (f *Font) SetDescent(px int) {
 func (f *Font) SetStride(px int) {
 	f.stride = px
 }
-func (f *Font) SetLetting(px int){
-	f.letting=px
+func (f *Font) SetLetting(px int) {
+	f.letting = px
 }
 
 func (f *Font) genChar(b byte) *Glyph {
@@ -195,7 +193,7 @@ func (f *Font) Dx(s string) int {
 	return f.MeasureBytes([]byte(s))
 }
 func (f *Font) Dy() int {
-	return f.dy+f.letting
+	return f.dy + f.letting
 }
 func (f *Font) Size() int {
 	return f.size
