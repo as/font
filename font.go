@@ -27,31 +27,22 @@ type Ruler interface {
 	Dx(s []byte, limitPixels int) int
 }
 
-type Cache interface {
-	Face
-	LoadGlyph(r rune, fg, bg color.Color) image.Image
-}
-
-type Cliche interface {
-	Cache
-	LoadBox(b []byte, fg, bg color.Color) image.Image
-}
 
 type Replacer interface {
 	Face
 	Replace(r rune)
 }
 
-func Open(f font.Face) Face {
+func Open(f font.Face) (Face) {
 	m := f.Metrics()
 	a := m.Ascent.Ceil()
 	h := m.Height.Ceil()
 	d := m.Descent.Ceil()
-	dy := h + h/2
-	l := dy / 2
+	dy := h+h/2
+	l := dy/2
 	s := 0
 	return &face{
-		s:  0,
+		s: 0,
 		a:  a,
 		d:  d,
 		h:  h,
@@ -65,7 +56,7 @@ type face struct {
 	font.Face
 }
 
-func (f face) Stride() int  { return f.s }
+func (f face) Stride() int { return f.s }
 func (f face) Letting() int { return f.l }
 func (f face) Height() int  { return f.h }
 func (f face) Ascent() int  { return f.a }
@@ -81,22 +72,6 @@ func (f face) Dx(p []byte, limitPix int) (n int) {
 		}
 	}
 	return n
-}
-
-func NewCache(f font.Face) Cache {
-	if f, ok := f.(Cache); ok {
-		return f
-	}
-	return &cache{
-		a:     Ascent(f),
-		d:     Descent(f),
-		h:     Height(f),
-		l:     Letting(f),
-		dy:    Height(f) + Height(f)/2,
-		cache: make(map[signature]*image.RGBA),
-		//		cachewidth: [256]int,
-		Face: f,
-	}
 }
 
 /*
