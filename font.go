@@ -21,7 +21,8 @@ type Ruler interface {
 	Letting() int
 	Stride() int
 	Dy() int
-	Dx(s []byte, limitPixels int) int
+	Dx(p []byte) (dx int)
+	Fits(p []byte, limitDx int) (n int)
 }
 
 type Replacer interface {
@@ -37,6 +38,7 @@ func Open(f font.Face) Face {
 	dy := h + h/2
 	l := dy / 2
 	return &face{
+		f: f,
 		s:  0,
 		a:  a,
 		d:  d,
@@ -51,18 +53,25 @@ type face struct {
 	font.Face
 }
 
-func (f face) Stride() int  { return f.s }
-func (f face) Letting() int { return f.l }
-func (f face) Height() int  { return f.h }
-func (f face) Ascent() int  { return f.a }
-func (f face) Descent() int { return f.d }
-func (f face) Dy() int      { return f.dy }
-func (f face) Dx(p []byte, limitPix int) (n int) {
+func (f *face) Stride() int  { return f.s }
+func (f *face) Letting() int { return f.l }
+func (f *face) Height() int  { return f.h }
+func (f *face) Ascent() int  { return f.a }
+func (f *face) Descent() int { return f.d }
+func (f *face) Dy() int      { return f.dy }
+func (f *face) Dx(p []byte) (dx int) {
+	for _, c := range p {
+		w, _ := f.Face.GlyphAdvance(rune(c))
+		dx += Fix(w)
+	}
+	return dx
+}
+func (f *face) Fits(p []byte, limitDx int) (n int) {
 	var c byte
 	for n, c = range p {
 		w, _ := f.Face.GlyphAdvance(rune(c))
-		limitPix -= Fix(w)
-		if limitPix < 0 {
+		limitDx -= Fix(w)
+		if limitDx < 0 {
 			return n
 		}
 	}

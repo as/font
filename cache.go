@@ -52,19 +52,26 @@ func (f *cachedFace) LoadGlyph(r rune, fg, bg color.Color) image.Image {
 	draw.Draw(img, img.Bounds(), image.NewUniform(bg), image.ZP, draw.Src)
 	draw.DrawMask(img, img.Bounds(), image.NewUniform(fg), image.ZP, mask, r0.Min, draw.Over)
 	f.cache[sig] = img
-	f.cachewidth[byte(r)] = f.Dx([]byte{byte(r)}, 32768)
+	f.cachewidth[byte(r)] = f.Dx([]byte{byte(r)})
 	return img
 }
 
-func (f *cachedFace) Dx(p []byte, limitPix int) (n int) {
+func (f cachedFace) Fits(p []byte, limitDx int) (n int){
 	var c byte
 	for n, c = range p {
-		limitPix -= f.cachewidth[c]
-		if limitPix < 0 {
+		limitDx -= f.cachewidth[c]
+		if limitDx < 0 {
 			return n
 		}
 	}
 	return n
+}
+
+func (f cachedFace) Dx(p []byte) (dx int) {
+	for _, c := range p {
+		dx += f.cachewidth[c]
+	}
+	return dx
 }
 
 func (f *cachedFace) genChar(r rune) (*image.Alpha, image.Rectangle) {
