@@ -38,7 +38,7 @@ func Open(f font.Face) Face {
 	dy := h + h/2
 	l := dy / 2
 	return &face{
-		f:  f,
+		Face:  f,
 		s:  0,
 		a:  a,
 		d:  d,
