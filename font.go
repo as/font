@@ -29,15 +29,15 @@ type Replacer interface {
 	Replace(r rune)
 }
 
-func Open(f font.Face) (Face) {
+func Open(f font.Face) Face {
 	m := f.Metrics()
 	a := m.Ascent.Ceil()
 	h := m.Height.Ceil()
 	d := m.Descent.Ceil()
-	dy := h+h/2
-	l := dy/2
+	dy := h + h/2
+	l := dy / 2
 	return &face{
-		s: 0,
+		s:  0,
 		a:  a,
 		d:  d,
 		h:  h,
@@ -51,7 +51,7 @@ type face struct {
 	font.Face
 }
 
-func (f face) Stride() int { return f.s }
+func (f face) Stride() int  { return f.s }
 func (f face) Letting() int { return f.l }
 func (f face) Height() int  { return f.h }
 func (f face) Ascent() int  { return f.a }

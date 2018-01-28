@@ -28,7 +28,7 @@ func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft
 	return stringBG(dst, p, src, sp, Open(ft), s, bg, bgp)
 }
 
-func StringNBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft Face, s []byte, bg image.Image, bgp image.Point) int {
+func StringNBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft Face, s []byte, bg image.Image) int {
 	p.Y += ft.Height()
 	for _, b := range s {
 		dr, mask, maskp, advance, _ := ft.Glyph(fixed.P(p.X, p.Y), rune(b))

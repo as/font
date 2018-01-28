@@ -1,13 +1,13 @@
 package font
 
 import (
+	"golang.org/x/image/font"
 	"image"
 	"image/color"
 	"image/draw"
-	"golang.org/x/image/font"
 )
 
-type Cliche interface{
+type Cliche interface {
 	Cache
 	LoadBox(s []byte, fg, bg color.Color) image.Image
 }
