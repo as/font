@@ -1,50 +1,96 @@
 package font
 
 import (
-	"fmt"
 	"image"
-	"image/draw"
-	"unicode"
+	"image/color"
 
-	"github.com/golang/freetype/truetype"
 	gofont "golang.org/x/image/font"
-	"golang.org/x/image/font/basicfont"
-	"golang.org/x/image/font/gofont/gomedium"
-	"golang.org/x/image/font/gofont/gomono"
-	"golang.org/x/image/font/gofont/goregular"
 	"golang.org/x/image/math/fixed"
 )
 
-type Face = gofont.Face
+func Fix(i fixed.Int26_6) int {
+	return i.Ceil()
+}
 
-type Font struct {
+type Face interface {
 	gofont.Face
-	hexDx   int
-	data    []byte
-	size    int
-	ascent  int
-	descent int
-	stride  int
-	letting int
-	dy      int
-
-	cache    Cache
-	hexCache Cache
-	decCache Cache
+	Ruler
 }
 
-func NewGoRegular(size int) *Font {
-	return NewTTF(goregular.TTF, size)
+type Ruler interface {
+	Ascent() int
+	Descent() int
+	Height() int
+	Letting() int
+	Stride() int
+	Dy() int
+	Dx(s []byte, limPix int) int
 }
 
-func NewGoMedium(size int) *Font {
-	return NewTTF(gomedium.TTF, size)
+type Cache interface {
+	Face
+	LoadGlyph(r rune, fg, bg color.Color) image.Image
 }
 
-func NewGoMono(size int) *Font {
-	return NewTTF(gomono.TTF, size)
+type Cliche interface {
+	Cache
+	LoadBox(b []byte) image.Image
 }
 
+type Replacer interface {
+	Face
+	Replace(r rune)
+}
+
+func Open(f gofont.Face) (Face, error) {
+	return &face{
+		a:  Ascent(f),
+		d:  Descent(f),
+		h:  Height(f),
+		l:  Letting(f),
+		dy: Height(f) + Height(f)/2,
+	}, nil
+}
+
+type face struct {
+	h, a, d, l, dy int
+	font.Face
+}
+
+func (f face) Letting() int { return f.l }
+func (f face) Height() int  { return f.h }
+func (f face) Ascent() int  { return f.a }
+func (f face) Descent() int { return f.d }
+func (f face) Dy() int      { return f.dy }
+func (f face) Dx(p []byte, limitPix int) (n int) {
+	var c byte
+	for n, c = range p {
+		w, _ := s.Face.GlyphAdvance(rune(b))
+		limitPix -= Fix(w)
+		if limitPix < 0 {
+			return n
+		}
+	}
+	return n
+}
+
+func NewCache(f gofont.Face) (Face, error) {
+	if _, ok := f.(ByteCache); ok {
+		return f
+	}
+	return &staticFace{
+		a:     Ascent(f),
+		d:     Descent(f),
+		h:     Height(f),
+		l:     Letting(f),
+		dy:    Height(f) + Height(f)/2,
+		cache: make(map[signature]*image.RGBA),
+		//		cachewidth: [256]int,
+		Face: f,
+	}
+}
+
+/*
 // NewBasic always returns a 7x13 basic font
 func NewRaster(f Face, size int) *Font {
 	ft := &Font{
@@ -67,95 +113,30 @@ func NewRaster(f Face, size int) *Font {
 	return ft
 }
 
-// NewBasic always returns a 7x13 basic font
-func NewBasic(size int) *Font {
-	f := basicfont.Face7x13
-	size = 13
-	ft := &Font{
-		Face:    f,
-		size:    size,
-		ascent:  2,
-		descent: 1,
-		letting: 0,
-		stride:  0,
-	}
-	ft.dy = ft.ascent + ft.descent + ft.size
-	hexFt := makefont(gomono.TTF, ft.Dy()/4+3)
-	ft.hexDx = ft.genChar('_').Bounds().Dx()
-	for i := 0; i != 256; i++ {
-		ft.cache[i] = ft.genChar(byte(i))
-		if ft.cache[i] == nil {
-			ft.cache[i] = hexFt.genHexChar(ft.Dy(), byte(i))
-		}
-	}
-	return ft
-}
-
-func NewTTF(data []byte, size int) *Font {
-	ft := makefont(data, size)
-	hexFt := makefont(gomono.TTF, ft.Dy()/4+3)
-
-	ft.hexDx = ft.genChar('_').Bounds().Dx()
-	for i := 0; i != 256; i++ {
-		ft.cache[i] = ft.genChar(byte(i))
-		if ft.cache[i] == nil {
-			ft.cache[i] = hexFt.genHexChar(ft.Dy(), byte(i))
-		}
-	}
-	return ft
-}
-
-func FromFace(f Face, size int) *Font {
-	ft := &Font{
-		Face:    f,
-		size:    size,
-		ascent:  2,
-		descent: +(size / 3),
-		stride:  0,
-	}
-	ft.dy = ft.ascent + ft.descent + ft.size
-	return ft
-}
-
 func makefont(data []byte, size int) *Font {
-	f, err := truetype.Parse(data)
-	if err != nil {
-		panic(err)
+	reply := make(chan interface{})
+	fontIRQ <- fontPKT{
+		id:    string(crc32.NewIEEE().Sum(data)),
+		reply: reply,
+		data:  data,
 	}
-	ft := FromFace(truetype.NewFace(f,
-		&truetype.Options{
-			Size:              float64(size),
-			GlyphCacheEntries: 512 * 2,
-			SubPixelsX:        1,
-		}), size)
-	ft.data = data
-	ft.dy = ft.ascent + ft.descent + ft.size
-	return ft
-}
-
-func (f *Font) NewSize(dy int) *Font {
-	if dy == f.Dy() {
-		return f
+	rx := <-reply
+	switch rx := rx.(type) {
+	case error:
+		println(rx)
+		return nil
+	case *truetype.Font:
+		ft := FromFace(truetype.NewFace(rx,
+			&truetype.Options{
+				Size:              float64(size),
+				GlyphCacheEntries: 512,
+				SubPixelsX:        1,
+			}), size)
+		ft.data = data
+		ft.dy = ft.ascent + ft.descent + ft.size
+		return ft
 	}
-	if f.data == nil {
-		return NewBasic(dy)
-	}
-	return NewTTF(f.data, dy)
-}
-
-func (f *Font) SetAscent(px int) {
-	f.ascent = px
-	f.dy = f.ascent + f.descent + f.size
-}
-func (f *Font) SetDescent(px int) {
-	f.descent = px
-	f.dy = f.ascent + f.descent + f.size
-}
-func (f *Font) SetStride(px int) {
-	f.stride = px
-}
-func (f *Font) SetLetting(px int) {
-	f.letting = px
+	panic("makefont")
 }
 
 func (f *Font) genChar(b byte) *Glyph {
@@ -169,6 +150,7 @@ func (f *Font) genChar(b byte) *Glyph {
 	draw.Draw(m, r, mask, maskp, draw.Src)
 	return &Glyph{mask: m, Rectangle: m.Bounds()}
 }
+
 func (f *Font) genHexChar(dy int, b byte) *Glyph {
 	s := fmt.Sprintf("%02x", b)
 	g0 := f.genChar(s[0])
@@ -180,61 +162,4 @@ func (f *Font) genHexChar(dy int, b byte) *Glyph {
 	draw.Draw(m, r.Add(image.Pt(-f.descent/4, f.descent*2)), g1.Mask(), image.ZP, draw.Over)
 	return &Glyph{mask: m, Rectangle: m.Bounds()}
 }
-
-func (f *Font) Char(b byte) (mask *image.Alpha) {
-	return f.cache[b].mask
-}
-
-func (f *Font) Descent() int {
-	return f.descent
-}
-
-func (f *Font) Dx(s string) int {
-	return f.MeasureBytes([]byte(s))
-}
-func (f *Font) Dy() int {
-	return f.dy + f.letting
-}
-func (f *Font) Size() int {
-	return f.size
-}
-func Fix(i fixed.Int26_6) int {
-	return i.Round()
-}
-func (f *Font) MeasureBytes(p []byte) (w int) {
-	for i := range p {
-		w += f.Measure(rune(byte(p[i])))
-	}
-	return w
-}
-
-func (f *Font) MeasureByte(b byte) (n int) {
-	return f.cache[b].Dx() + f.stride
-}
-
-func (f *Font) MeasureRune(r rune) (q int) {
-	advance, _ := f.GlyphAdvance(r)
-	return Fix(advance)
-}
-
-func (f *Font) Measure(r rune) (q int) {
-	return f.cache[byte(r)].Dx() + f.stride
-}
-
-func (f *Font) MeasureHex() int {
-	return f.hexDx
-}
-
-func (f *Font) TTF() []byte {
-	return f.data
-}
-
-func (f *Font) Printable(b byte) bool {
-	if b == 0 || b > 127 {
-		return false
-	}
-	if unicode.IsGraphic(rune(b)) {
-		return true
-	}
-	return false
-}
+*/
