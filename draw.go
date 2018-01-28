@@ -10,7 +10,9 @@ import (
 )
 
 func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft font.Face, s []byte, bg image.Image, bgp image.Point) int {
-
+	if bg == nil{
+		return StringNBG(dst, p, src, sp, ft, s)
+	}
 	if fg, bg, ok := canCache(src, bg); ok {
 		switch ft := ft.(type) {
 		case Cliche:
@@ -28,10 +30,16 @@ func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft
 	return stringBG(dst, p, src, sp, Open(ft), s, bg, bgp)
 }
 
-func StringNBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft Face, s []byte) int {
-	p.Y += ft.Height()
+func StringNBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft font.Face, s []byte) int {
+	var f Face
+	if ft, ok := ft.(Face); !ok{
+		f = Open(ft)
+	} else {
+		f = ft
+	}
+	p.Y += f.Height()
 	for _, b := range s {
-		dr, mask, maskp, advance, _ := ft.Glyph(fixed.P(p.X, p.Y), rune(b))
+		dr, mask, maskp, advance, _ := f.Glyph(fixed.P(p.X, p.Y), rune(b))
 		draw.DrawMask(dst, dr, src, sp, mask, maskp, draw.Over)
 		p.X += Fix(advance)
 	}
