@@ -1,5 +1,6 @@
 package font
 
+/*
 import "image"
 
 type Cache [256]*Glyph
@@ -16,3 +17,4 @@ func (g Glyph) Mask() *image.Alpha {
 func (g Glyph) Bounds() image.Rectangle {
 	return g.Rectangle
 }
+*/

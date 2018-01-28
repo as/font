@@ -42,14 +42,16 @@ type Replacer interface {
 	Replace(r rune)
 }
 
-func Open(f font.Face) (Face) {
+func Open(f font.Face) Face {
 	m := f.Metrics()
 	a := m.Ascent.Ceil()
 	h := m.Height.Ceil()
 	d := m.Descent.Ceil()
-	dy := h+h/2
-	l := dy/2
+	dy := h + h/2
+	l := dy / 2
+	s := 0
 	return &face{
+		s:  0,
 		a:  a,
 		d:  d,
 		h:  h,
@@ -59,10 +61,11 @@ func Open(f font.Face) (Face) {
 }
 
 type face struct {
-	h, a, d, l, dy int
+	h, a, d, l, dy, s int
 	font.Face
 }
 
+func (f face) Stride() int  { return f.s }
 func (f face) Letting() int { return f.l }
 func (f face) Height() int  { return f.h }
 func (f face) Ascent() int  { return f.a }
@@ -71,7 +74,7 @@ func (f face) Dy() int      { return f.dy }
 func (f face) Dx(p []byte, limitPix int) (n int) {
 	var c byte
 	for n, c = range p {
-		w, _ := s.Face.GlyphAdvance(rune(b))
+		w, _ := f.Face.GlyphAdvance(rune(c))
 		limitPix -= Fix(w)
 		if limitPix < 0 {
 			return n
@@ -80,11 +83,11 @@ func (f face) Dx(p []byte, limitPix int) (n int) {
 	return n
 }
 
-func NewCache(f gofont.Face) (Face, error) {
-	if _, ok := f.(ByteCache); ok {
+func NewCache(f font.Face) Cache {
+	if f, ok := f.(Cache); ok {
 		return f
 	}
-	return &staticFace{
+	return &cache{
 		a:     Ascent(f),
 		d:     Descent(f),
 		h:     Height(f),

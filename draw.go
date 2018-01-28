@@ -1,16 +1,16 @@
 package font
 
 import (
+	"golang.org/x/image/font"
 	"image"
 	"image/color"
 	"image/draw"
-	"golang.org/x/image/font"
 
 	"golang.org/x/image/math/fixed"
 )
 
 func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft font.Face, s []byte, bg image.Image, bgp image.Point) int {
-	
+
 	if fg, bg, ok := canCache(src, bg); ok {
 		switch ft := ft.(type) {
 		case Cliche:
