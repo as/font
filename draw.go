@@ -1,26 +1,31 @@
 package font
 
 import (
-	"golang.org/x/image/math/fixed"
 	"image"
+	"image/color"
 	"image/draw"
-	"unicode/utf8"
+	"golang.org/x/image/font"
+
+	"golang.org/x/image/math/fixed"
 )
 
 func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft font.Face, s []byte, bg image.Image, bgp image.Point) int {
-	cfg, bfg, ok := canCache(src, bg)
-	if !ok {
+	cfg, cbg, ok := canCache(src, bg)
+	if ok {
+		switch ft := ft.(type) {
+		case Cliche:
+			img := ft.LoadBox(s, fg, bg)
+			dr := img.Bounds().Add(p)
+			draw.Draw(dst, dr, img, img.Bounds().Min, draw.Src)
+			return dr.Dx()
+		case Cache:
+			return staticStringBG(dst, p, ft, s, cfg, cbg)
+		}
+	}
+	if ft, ok := ft.(Face); ok {
 		return stringBG(dst, p, src, sp, ft, s, bg, bgp)
 	}
-	switch ft := ft.(type) {
-	case Cliche:
-		img := ft.LoadBox(s, fg, bg)
-		dr := img.Bounds().Add(p)
-		draw.Draw(dst, dr, img, img.Bounds().Min, draw.Src)
-		return dr.Dx()
-	case Cache:
-
-	}
+	return stringBG(dst, p, src, sp, Open(ft), s, bg, bgp)
 }
 
 func StringNBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft Face, s []byte, bg image.Image, bgp image.Point) int {

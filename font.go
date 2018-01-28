@@ -24,7 +24,7 @@ type Ruler interface {
 	Letting() int
 	Stride() int
 	Dy() int
-	Dx(s []byte, limPix int) int
+	Dx(s []byte, limitPixels int) int
 }
 
 type Cache interface {
@@ -34,7 +34,7 @@ type Cache interface {
 
 type Cliche interface {
 	Cache
-	LoadBox(b []byte) image.Image
+	LoadBox(b []byte, fg, bg color.Color) image.Image
 }
 
 type Replacer interface {
