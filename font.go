@@ -1,9 +1,6 @@
 package font
 
 import (
-	"image"
-	"image/color"
-
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
 )
@@ -27,7 +24,6 @@ type Ruler interface {
 	Dx(s []byte, limitPixels int) int
 }
 
-
 type Replacer interface {
 	Face
 	Replace(r rune)
@@ -40,7 +36,6 @@ func Open(f font.Face) (Face) {
 	d := m.Descent.Ceil()
 	dy := h+h/2
 	l := dy/2
-	s := 0
 	return &face{
 		s: 0,
 		a:  a,

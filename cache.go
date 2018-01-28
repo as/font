@@ -42,6 +42,20 @@ type signature struct {
 	bg color.RGBA
 }
 
+func (f *cachedFace) LoadGlyph(r rune, fg, bg color.Color) image.Image {
+	sig := signature{r, convert(fg), convert(bg)}
+	if img, ok := f.cache[sig]; ok {
+		return img
+	}
+	mask, r0 := f.genChar(r)
+	img := image.NewRGBA(r0)
+	draw.Draw(img, img.Bounds(), image.NewUniform(bg), image.ZP, draw.Src)
+	draw.DrawMask(img, img.Bounds(), image.NewUniform(fg), image.ZP, mask, r0.Min, draw.Over)
+	f.cache[sig] = img
+	f.cachewidth[byte(r)] = f.Dx([]byte{byte(r)}, 32768)
+	return img
+}
+
 func (f *cachedFace) Dx(p []byte, limitPix int) (n int) {
 	var c byte
 	for n, c = range p {
@@ -54,7 +68,7 @@ func (f *cachedFace) Dx(p []byte, limitPix int) (n int) {
 }
 
 func (f *cachedFace) genChar(r rune) (*image.Alpha, image.Rectangle) {
-	dr, mask, maskp, adv, _ := f.Face.Glyph(fixed.P(0, f.Height(), r))
+	dr, mask, maskp, adv, _ := f.Face.Glyph(fixed.P(0, f.Height()), r)
 	r0 := image.Rect(0, 0, Fix(adv), f.Dy())
 	m := image.NewAlpha(r0)
 	r0 = r0.Add(image.Pt(dr.Min.X, dr.Min.Y))
@@ -65,18 +79,4 @@ func (f *cachedFace) genChar(r rune) (*image.Alpha, image.Rectangle) {
 func convert(c color.Color) color.RGBA {
 	r, g, b, a := c.RGBA()
 	return color.RGBA{byte(r >> 8), byte(g >> 8), byte(b >> 8), byte(a >> 8)}
-}
-
-func (f *cachedFace) LoadGlyph(r rune, fg, bg color.Color) image.Image {
-	sig := signature{r, convert(fg), convert(bg)}
-	if img, ok := f.cache[sig]; ok {
-		return img
-	}
-	mask, r0 := f.genChar(r)
-	img := image.NewRGBA(r0)
-	draw.Draw(img, img.Bounds(), image.NewUniform(bg), image.ZP, draw.Src)
-	draw.DrawMask(img, img.Bounds(), image.NewUniform(fg), image.ZP, mask, r0.Min, draw.Over)
-	s.cache[sig] = img
-	s.cachewidth[byte(r)] = s.Dx([]byte{byte(r)})
-	return img
 }
