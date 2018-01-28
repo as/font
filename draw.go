@@ -10,7 +10,7 @@ import (
 )
 
 func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft font.Face, s []byte, bg image.Image, bgp image.Point) int {
-	if bg == nil{
+	if bg == nil {
 		return StringNBG(dst, p, src, sp, ft, s)
 	}
 	if fg, bg, ok := canCache(src, bg); ok {
@@ -32,7 +32,7 @@ func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft
 
 func StringNBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft font.Face, s []byte) int {
 	var f Face
-	if ft, ok := ft.(Face); !ok{
+	if ft, ok := ft.(Face); !ok {
 		f = Open(ft)
 	} else {
 		f = ft

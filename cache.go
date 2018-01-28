@@ -56,7 +56,7 @@ func (f *cachedFace) LoadGlyph(r rune, fg, bg color.Color) image.Image {
 	return img
 }
 
-func (f cachedFace) Fits(p []byte, limitDx int) (n int){
+func (f cachedFace) Fits(p []byte, limitDx int) (n int) {
 	var c byte
 	for n, c = range p {
 		limitDx -= f.cachewidth[c]
