@@ -7,6 +7,7 @@ import (
 	"unicode/utf8"
 )
 
+/*
 func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft *Font, s []byte, bg image.Image, bgp image.Point) int {
 	for _, b := range s {
 		mask := ft.Char(b)
@@ -70,3 +71,4 @@ func RuneNBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft 
 	}
 	return p.X
 }
+*/
