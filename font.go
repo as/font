@@ -4,7 +4,7 @@ import (
 	"image"
 	"image/color"
 
-	gofont "golang.org/x/image/font"
+	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
 )
 
@@ -13,7 +13,7 @@ func Fix(i fixed.Int26_6) int {
 }
 
 type Face interface {
-	gofont.Face
+	font.Face
 	Ruler
 }
 
@@ -42,14 +42,20 @@ type Replacer interface {
 	Replace(r rune)
 }
 
-func Open(f gofont.Face) (Face, error) {
+func Open(f font.Face) (Face) {
+	m := f.Metrics()
+	a := m.Ascent.Ceil()
+	h := m.Height.Ceil()
+	d := m.Descent.Ceil()
+	dy := h+h/2
+	l := dy/2
 	return &face{
-		a:  Ascent(f),
-		d:  Descent(f),
-		h:  Height(f),
-		l:  Letting(f),
-		dy: Height(f) + Height(f)/2,
-	}, nil
+		a:  a,
+		d:  d,
+		h:  h,
+		l:  l,
+		dy: dy,
+	}
 }
 
 type face struct {

@@ -10,8 +10,8 @@ import (
 )
 
 func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft font.Face, s []byte, bg image.Image, bgp image.Point) int {
-	cfg, cbg, ok := canCache(src, bg)
-	if ok {
+	
+	if fg, bg, ok := canCache(src, bg); ok {
 		switch ft := ft.(type) {
 		case Cliche:
 			img := ft.LoadBox(s, fg, bg)
@@ -19,7 +19,7 @@ func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft
 			draw.Draw(dst, dr, img, img.Bounds().Min, draw.Src)
 			return dr.Dx()
 		case Cache:
-			return staticStringBG(dst, p, ft, s, cfg, cbg)
+			return staticStringBG(dst, p, ft, s, fg, bg)
 		}
 	}
 	if ft, ok := ft.(Face); ok {
@@ -47,7 +47,7 @@ func canCache(f image.Image, b image.Image) (fg, bg color.Color, ok bool) {
 	return fg, bg, false
 }
 
-func stringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft Font, s []byte, bg image.Image, bgp image.Point) int {
+func stringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft Face, s []byte, bg image.Image, bgp image.Point) int {
 	p.Y += ft.Height()
 	for _, b := range s {
 		dr, mask, maskp, advance, _ := ft.Glyph(fixed.P(p.X, p.Y), rune(b))
@@ -60,9 +60,9 @@ func stringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft
 
 func staticStringBG(dst draw.Image, p image.Point, ft Cache, s []byte, fg, bg color.Color) int {
 	r := image.Rectangle{p, p}
-	r.Max.Y += Dy(ft)
+	r.Max.Y += ft.Dy()
 	for _, b := range s {
-		img := ft.LoadGlyph(b, fg, bg)
+		img := ft.LoadGlyph(rune(b), fg, bg)
 		dx := img.Bounds().Dx()
 		r.Max.X += dx
 		draw.Draw(dst, r, img, img.Bounds().Min, draw.Src)
