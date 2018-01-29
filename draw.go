@@ -31,11 +31,12 @@ func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft
 }
 
 func StringNBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft font.Face, s []byte) int {
-	var f Face
-	if ft, ok := ft.(Face); !ok {
+	var (
+		f  Face
+		ok bool
+	)
+	if f, ok = ft.(Face); !ok {
 		f = Open(ft)
-	} else {
-		f = ft
 	}
 	p.Y += f.Height()
 	for _, b := range s {

@@ -31,6 +31,13 @@ type Replacer interface {
 }
 
 func Open(f font.Face) Face {
+	if f == nil {
+		panic("open: nil face")
+	}
+	switch f := f.(type) {
+	case Face:
+		return f
+	}
 	m := f.Metrics()
 	a := m.Ascent.Ceil()
 	h := m.Height.Ceil()
@@ -38,13 +45,13 @@ func Open(f font.Face) Face {
 	dy := h + h/2
 	l := dy / 2
 	return &face{
-		Face:  f,
-		s:  0,
-		a:  a,
-		d:  d,
-		h:  h,
-		l:  l,
-		dy: dy,
+		Face: f,
+		s:    0,
+		a:    a,
+		d:    d,
+		h:    h,
+		l:    l,
+		dy:   dy,
 	}
 }
 

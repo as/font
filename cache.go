@@ -24,10 +24,14 @@ func NewCache(f font.Face) Cache {
 	case font.Face:
 		f0 = Open(f)
 	}
-	return &cachedFace{
+	cf := &cachedFace{
 		Face:  f0,
 		cache: make(map[signature]*image.RGBA),
 	}
+	for i := range cf.cachewidth {
+		cf.cachewidth[i] = f0.Dx([]byte{byte(i)})
+	}
+	return cf
 }
 
 type cachedFace struct {
@@ -56,7 +60,7 @@ func (f *cachedFace) LoadGlyph(r rune, fg, bg color.Color) image.Image {
 	return img
 }
 
-func (f cachedFace) Fits(p []byte, limitDx int) (n int) {
+func (f *cachedFace) Fits(p []byte, limitDx int) (n int) {
 	var c byte
 	for n, c = range p {
 		limitDx -= f.cachewidth[c]
@@ -67,7 +71,7 @@ func (f cachedFace) Fits(p []byte, limitDx int) (n int) {
 	return n
 }
 
-func (f cachedFace) Dx(p []byte) (dx int) {
+func (f *cachedFace) Dx(p []byte) (dx int) {
 	for _, c := range p {
 		dx += f.cachewidth[c]
 	}
