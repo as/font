@@ -1,10 +1,11 @@
 package font
 
 import (
-	"golang.org/x/image/font"
 	"image"
 	"image/color"
 	"image/draw"
+
+	"golang.org/x/image/font"
 
 	"golang.org/x/image/math/fixed"
 )
