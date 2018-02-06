@@ -20,7 +20,7 @@ import (
 func Replacer(a, b Face, cond func(r rune) bool) Face {
 	if cond == nil {
 		cond = func(r rune) bool {
-			return r > 127 || !unicode.IsGraphic(r) || r == 0
+			return r > 127 || r <= 0 || !unicode.IsGraphic(r)
 		}
 	}
 	return NewCache(&repl{

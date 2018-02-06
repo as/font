@@ -29,8 +29,13 @@ func (f *hex) Dy() int      { return f.dy }
 func (f *hex) Dx(p []byte) (dx int) {
 	return (f.dx * f.s) + (f.dx * len(p))
 }
+
 func (f *hex) Fits(p []byte, limitDx int) (n int) {
-	return limitDx / f.dx
+	n = limitDx / f.dx
+	if n > len(p) {
+		n = len(p)
+	}
+	return n
 }
 func (f *hex) Close() error {
 	return nil
@@ -46,7 +51,7 @@ func (f *hex) Glyph(dot fixed.Point26_6, r rune) (dr image.Rectangle, mask image
 	dr.Max.X = r0.Dx()
 	dr.Max.Y = r0.Dy()
 	dr = dr.Add(dot0)
-	return dr, img, image.ZP, fixed.I(r0.Dx()), true
+	return dr, img, image.ZP, fixed.I(f.dx), true
 }
 func (f *hex) GlyphBounds(r rune) (bounds fixed.Rectangle26_6, advance fixed.Int26_6, ok bool) {
 	if r > 255 {
@@ -54,14 +59,14 @@ func (f *hex) GlyphBounds(r rune) (bounds fixed.Rectangle26_6, advance fixed.Int
 	}
 	r0 := f.glyphs[byte(r)].Bounds()
 	bounds.Max = bounds.Max.Add(fixed.P(r0.Dx(), r0.Dy()))
-	return bounds, fixed.I(r0.Dx()), true
+	return bounds, fixed.I(f.dx), true
 }
 func (f *hex) GlyphAdvance(r rune) (advance fixed.Int26_6, ok bool) {
 	if r > 255 {
 		return
 	}
-	r0 := f.glyphs[byte(r)].Bounds()
-	return fixed.I(r0.Dx()), true
+	//r0 := f.glyphs[byte(r)].Bounds()
+	return fixed.I(f.dx), true //fixed.I(r0.Dx()), true
 }
 func (f *hex) Kern(r0, r1 rune) fixed.Int26_6 { return 0 }
 func (f *hex) Metrics() (m font.Metrics)      { return }
