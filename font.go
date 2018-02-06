@@ -66,14 +66,14 @@ func (f *face) Dx(p []byte) (dx int) {
 		w, _ := f.Face.GlyphAdvance(rune(c))
 		dx += Fix(w)
 	}
-	return dx+f.Stride()*len(p)
+	return dx + f.Stride()*len(p)
 }
 func (f *face) Fits(p []byte, limitDx int) (n int) {
 	var c byte
 	stride := f.Stride()
 	for n, c = range p {
 		w, _ := f.Face.GlyphAdvance(rune(c))
-		limitDx -= Fix(w)+stride
+		limitDx -= Fix(w) + stride
 		if limitDx < 0 {
 			return n
 		}

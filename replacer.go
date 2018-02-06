@@ -75,9 +75,9 @@ func (f *Replacer) GlyphAdvance(r rune) (advance fixed.Int26_6, ok bool) {
 }
 func (f *Replacer) Kern(r0, r1 rune) fixed.Int26_6 {
 	if f.fn(r0) {
-		return f.b.Kern(r0,r1)
+		return f.b.Kern(r0, r1)
 	}
-	return f.Face.Kern(r0,r1)
+	return f.Face.Kern(r0, r1)
 }
 
 func (f *Replacer) Metrics() (m font.Metrics) {

@@ -93,7 +93,7 @@ func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft
 		r := mask.Bounds()
 		//draw.Draw(dst, r.Add(p), bg, bgp, draw.Src)
 		draw.DrawMask(dst, r.Add(p), src, sp, mask, mask.Bounds().Min, draw.Over)
-		p.X += r.Dx() 
+		p.X += r.Dx()
 	}
 	return p.X
 }

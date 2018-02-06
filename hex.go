@@ -45,7 +45,7 @@ func (f *hex) Glyph(dot fixed.Point26_6, r rune) (dr image.Rectangle, mask image
 	r0 := img.Bounds()
 	dr.Max.X = r0.Dx()
 	dr.Max.Y = r0.Dy()
-	dr=dr.Add(dot0)
+	dr = dr.Add(dot0)
 	return dr, img, image.ZP, fixed.I(r0.Dx()), true
 }
 func (f *hex) GlyphBounds(r rune) (bounds fixed.Rectangle26_6, advance fixed.Int26_6, ok bool) {
@@ -68,18 +68,18 @@ func (f *hex) Metrics() (m font.Metrics)      { return }
 func (f *hex) genHexChars(dy int) {
 
 	var helper [16]*image.Alpha
-	
+
 	{
-	ft := NewGoMedium(dy/5+dy/3+dy/dy+2)
-	
-	for i, c := range []rune{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'} {
-		dr, mask, maskp, adv, _ := ft.Glyph(fixed.P(0, ft.Height()), c)
-		r := image.Rect(0, 0, Fix(adv), ft.Dy())
-		m := image.NewAlpha(r)
-		r = r.Add(image.Pt(dr.Min.X, dr.Min.Y))
-		draw.Draw(m, r, mask, maskp, draw.Src)
-		helper[i] = m
-	}
+		ft := NewGoMedium(dy/5 + dy/3 + dy/dy + 2)
+
+		for i, c := range []rune{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'} {
+			dr, mask, maskp, adv, _ := ft.Glyph(fixed.P(0, ft.Height()), c)
+			r := image.Rect(0, 0, Fix(adv), ft.Dy())
+			m := image.NewAlpha(r)
+			r = r.Add(image.Pt(dr.Min.X, dr.Min.Y))
+			draw.Draw(m, r, mask, maskp, draw.Src)
+			helper[i] = m
+		}
 	}
 
 	d0 := f.Descent()
@@ -88,7 +88,7 @@ func (f *hex) genHexChars(dy int) {
 		g1 := helper[i%16]
 		r := image.Rect(2-2, d0, g0.Bounds().Dx()+g1.Bounds().Dx()+7-2, dy-3)
 		m := image.NewAlpha(r)
-		draw.Draw(m, r.Add(image.Pt(2,0)), g0, image.ZP, draw.Over)
+		draw.Draw(m, r.Add(image.Pt(2, 0)), g0, image.ZP, draw.Over)
 		r.Min.X += g0.Bounds().Dx()
 		draw.Draw(m, r.Add(image.Pt(-d0/4+2, d0-d0*2)), g1, image.ZP, draw.Over)
 		f.glyphs[i] = m
