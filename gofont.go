@@ -14,29 +14,23 @@ func NewFace(size int) Face {
 }
 
 func NewGoMedium(size int) Face {
-	return Open(truetype.NewFace(gomedium.Font, &truetype.Options{
+	return NewCache(truetype.NewFace(gomedium.Font, &truetype.Options{
 		SubPixelsX: 64,
 		SubPixelsY: 64,
 		Size:       float64(size),
 	}))
 }
 
-var g = gomono.Font
-
 func NewGoMono(size int) Face {
-	return NewReplacer(NewGoMedium(size), NewHex(size), nil)
-
-	/*
-		return NewCache((truetype.NewFace(gomono.Font, &truetype.Options{
-			SubPixelsX: 64,
-			SubPixelsY: 64,
-			Size:       float64(size),
-		})))
-	*/
+	return NewCache(truetype.NewFace(gomono.Font, &truetype.Options{
+		SubPixelsX: 64,
+		SubPixelsY: 64,
+		Size:       float64(size),
+	}))
 }
 
 func NewGoRegular(size int) Face {
-	return Open(truetype.NewFace(goregular.Font, &truetype.Options{
+	return NewCache(truetype.NewFace(goregular.Font, &truetype.Options{
 		SubPixelsX: 64,
 		SubPixelsY: 64,
 		Size:       float64(size),
