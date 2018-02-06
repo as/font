@@ -58,6 +58,7 @@ func canCache(f image.Image, b image.Image) (fg, bg color.Color, ok bool) {
 }
 
 func stringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft Face, s []byte, bg image.Image, bgp image.Point) int {
+
 	p.Y += ft.Height()
 	for _, b := range s {
 		dr, mask, maskp, advance, _ := ft.Glyph(fixed.P(p.X, p.Y), rune(b))
@@ -71,6 +72,7 @@ func stringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft
 func staticStringBG(dst draw.Image, p image.Point, ft Cache, s []byte, fg, bg color.Color) int {
 	r := image.Rectangle{p, p}
 	r.Max.Y += ft.Dy()
+
 	for _, b := range s {
 		img := ft.LoadGlyph(rune(b), fg, bg)
 		dx := img.Bounds().Dx()
@@ -91,7 +93,7 @@ func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft
 		r := mask.Bounds()
 		//draw.Draw(dst, r.Add(p), bg, bgp, draw.Src)
 		draw.DrawMask(dst, r.Add(p), src, sp, mask, mask.Bounds().Min, draw.Over)
-		p.X += r.Dx() + ft.stride
+		p.X += r.Dx() 
 	}
 	return p.X
 }
@@ -104,7 +106,7 @@ func StringNBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, f
 		}
 		r := mask.Bounds()
 		draw.DrawMask(dst, r.Add(p), src, sp, mask, mask.Bounds().Min, draw.Over)
-		p.X += r.Dx() + ft.stride
+		p.X += r.Dx()
 	}
 	return p.X
 }
