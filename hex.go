@@ -70,7 +70,7 @@ func (f *hex) genHexChars(dy int) {
 	var helper [16]*image.Alpha
 
 	{
-		ft := NewGoMedium(dy/5 + dy/3 + dy/dy + 2)
+		ft := NewGoMedium(dy/5 + dy/3 + 3)
 
 		for i, c := range []rune{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'} {
 			dr, mask, maskp, adv, _ := ft.Glyph(fixed.P(0, ft.Height()), c)
