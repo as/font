@@ -10,7 +10,7 @@ import (
 // New returns a GoMedium font that is cached and replaces
 // non-printable characters with their hex equivalent encodings
 func NewFace(size int) Face {
-	return NewReplacer(NewGoMedium(size), NewHex(size), nil)
+	return NewCache(Replacer(NewGoMedium(size), NewHex(size), nil))
 }
 
 func NewGoMedium(size int) Face {
