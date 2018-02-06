@@ -86,7 +86,7 @@ func (f *hex) genHexChars(dy int) {
 	for i := 0; i != 256; i++ {
 		g0 := helper[i/16]
 		g1 := helper[i%16]
-		r := image.Rect(2-2, d0, g0.Bounds().Dx()+g1.Bounds().Dx()+7-2, dy-3)
+		r := image.Rect(2, d0, g0.Bounds().Dx()+g1.Bounds().Dx()+7, dy-3)
 		m := image.NewAlpha(r)
 		draw.Draw(m, r.Add(image.Pt(2, 0)), g0, image.ZP, draw.Over)
 		r.Min.X += g0.Bounds().Dx()
