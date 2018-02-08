@@ -13,7 +13,6 @@ type Face interface {
 	font.Face
 	Ruler
 }
-
 type Ruler interface {
 	Ascent() int
 	Descent() int
