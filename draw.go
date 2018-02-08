@@ -27,7 +27,7 @@ func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft
 				return staticRuneBG(dst, p, ft.(Cache), s, fg, bg)
 			}
 			return staticStringBG(dst, p, ft, s, fg, bg)
-			
+
 		}
 	}
 	switch ft := ft.(type) {
@@ -88,7 +88,6 @@ func staticRuneBG(dst draw.Image, p image.Point, ft Cache, s []byte, fg, bg colo
 	}
 	return r.Min.X - p.X
 }
-
 
 func stringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft Face, s []byte, bg image.Image, bgp image.Point) int {
 	p.Y += ft.Height()
