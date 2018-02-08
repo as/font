@@ -22,10 +22,18 @@ func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft
 			draw.Draw(dst, dr, img, img.Bounds().Min, draw.Src)
 			return dr.Dx()
 		case Cache:
+			switch ft := ft.(type) {
+			case Rune:
+				return staticRuneBG(dst, p, ft.(Cache), s, fg, bg)
+			}
 			return staticStringBG(dst, p, ft, s, fg, bg)
+			
 		}
 	}
-	if ft, ok := ft.(Face); ok {
+	switch ft := ft.(type) {
+	case *runeface:
+		return runeBG(dst, p, src, sp, ft, s, bg, bgp)
+	case Face:
 		return stringBG(dst, p, src, sp, ft, s, bg, bgp)
 	}
 	return stringBG(dst, p, src, sp, Open(ft), s, bg, bgp)
@@ -57,8 +65,32 @@ func canCache(f image.Image, b image.Image) (fg, bg color.Color, ok bool) {
 	return fg, bg, false
 }
 
-func stringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft Face, s []byte, bg image.Image, bgp image.Point) int {
+func runeBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft Face, s []byte, bg image.Image, bgp image.Point) int {
+	p.Y += ft.Height()
+	for _, b := range string(s) {
+		dr, mask, maskp, advance, _ := ft.Glyph(fixed.P(p.X, p.Y), b)
+		draw.Draw(dst, dr, bg, bgp, draw.Src)
+		draw.DrawMask(dst, dr, src, sp, mask, maskp, draw.Over)
+		p.X += Fix(advance)
+	}
+	return p.X
+}
+func staticRuneBG(dst draw.Image, p image.Point, ft Cache, s []byte, fg, bg color.Color) int {
+	r := image.Rectangle{p, p}
+	r.Max.Y += ft.Dy()
 
+	for _, b := range string(s) {
+		img := ft.LoadGlyph(b, fg, bg)
+		dx := img.Bounds().Dx()
+		r.Max.X += dx
+		draw.Draw(dst, r, img, img.Bounds().Min, draw.Src)
+		r.Min.X += dx
+	}
+	return r.Min.X - p.X
+}
+
+
+func stringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft Face, s []byte, bg image.Image, bgp image.Point) int {
 	p.Y += ft.Height()
 	for _, b := range s {
 		dr, mask, maskp, advance, _ := ft.Glyph(fixed.P(p.X, p.Y), rune(b))
