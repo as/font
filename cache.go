@@ -19,6 +19,8 @@ func NewCache(f font.Face) Cache {
 	switch f := f.(type) {
 	case Cache:
 		return f
+	case Rune:
+		return newRuneCache(f)
 	case Face:
 		f0 = f
 	case font.Face:
@@ -56,7 +58,9 @@ func (f *cachedFace) LoadGlyph(r rune, fg, bg color.Color) image.Image {
 	draw.Draw(img, img.Bounds(), image.NewUniform(bg), image.ZP, draw.Src)
 	draw.DrawMask(img, img.Bounds(), image.NewUniform(fg), image.ZP, mask, r0.Min, draw.Over)
 	f.cache[sig] = img
-	f.cachewidth[byte(r)] = f.Dx([]byte{byte(r)})
+	if int(r) <  len(f.cache){
+		f.cachewidth[byte(r)] = f.Dx([]byte{byte(r)})
+	}
 	return img
 }
 

@@ -12,6 +12,7 @@ import (
 // non-printable characters with their hex equivalent encodings
 func NewFace(size int) Face {
 	return NewCache(Replacer(NewGoMedium(size), NewHex(size), nil))
+//	return NewCache(NewRune(NewGoMedium(size)))
 //	var fn func(size int) Face
 //	fn = func(size int) Face{
 //		return &Resizer{
