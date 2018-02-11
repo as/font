@@ -1,16 +1,21 @@
 package font
 
 import (
+	"unicode"
+
 	"github.com/as/font/gomedium"
 	"github.com/as/font/gomono"
 	"github.com/as/font/goregular"
 	"github.com/golang/freetype/truetype"
 )
 
+func notGraphic(r rune) bool { return !unicode.IsGraphic(r) }
+
 // New returns a GoMedium font that is cached and replaces
 // non-printable characters with their hex equivalent encodings
 func NewFace(size int) Face {
 	return NewCache(Replacer(NewGoMedium(size), NewHex(size), nil))
+	// return NewCache(Replacer(NewGoMedium(size), NewHex(size), nil))
 	//	return NewCache(NewRune(NewGoMedium(size)))
 	//	var fn func(size int) Face
 	//	fn = func(size int) Face{
@@ -23,7 +28,7 @@ func NewFace(size int) Face {
 }
 
 func NewGoMedium(size int) Face {
-	return NewCache(truetype.NewFace(gomedium.Font, &truetype.Options{
+	return Open(truetype.NewFace(gomedium.Font, &truetype.Options{
 		SubPixelsX: 64,
 		SubPixelsY: 64,
 		Size:       float64(size),
@@ -31,7 +36,7 @@ func NewGoMedium(size int) Face {
 }
 
 func NewGoMono(size int) Face {
-	return NewCache(truetype.NewFace(gomono.Font, &truetype.Options{
+	return Open(truetype.NewFace(gomono.Font, &truetype.Options{
 		SubPixelsX: 64,
 		SubPixelsY: 64,
 		Size:       float64(size),
@@ -39,7 +44,7 @@ func NewGoMono(size int) Face {
 }
 
 func NewGoRegular(size int) Face {
-	return NewCache(truetype.NewFace(goregular.Font, &truetype.Options{
+	return Open(truetype.NewFace(goregular.Font, &truetype.Options{
 		SubPixelsX: 64,
 		SubPixelsY: 64,
 		Size:       float64(size),

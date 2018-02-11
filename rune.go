@@ -2,6 +2,8 @@ package font
 
 import (
 	"image"
+	"image/color"
+	"image/draw"
 
 	"golang.org/x/image/font"
 )
@@ -77,6 +79,22 @@ func (f *cachedRuneFace) Dx(p []byte) (dx int) {
 		}
 	}
 	return dx
+}
+
+func (f *cachedRuneFace) LoadGlyph(r rune, fg, bg color.Color) image.Image {
+	sig := signature{r, convert(fg), convert(bg)}
+	if img, ok := f.cache[sig]; ok {
+		return img
+	}
+	mask, r0 := f.genChar(r)
+	img := image.NewRGBA(r0)
+	draw.Draw(img, img.Bounds(), image.NewUniform(bg), image.ZP, draw.Src)
+	draw.DrawMask(img, img.Bounds(), image.NewUniform(fg), image.ZP, mask, r0.Min, draw.Over)
+	f.cache[sig] = img
+	if int(r) < len(f.cache) {
+		f.cachewidth[r] = f.Dx([]byte(string(r)))
+	}
+	return img
 }
 
 func (f *cachedRuneFace) Fits(p []byte, limitDx int) (n int) {
