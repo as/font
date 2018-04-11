@@ -11,6 +11,7 @@ import (
 )
 
 func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft font.Face, s []byte, bg image.Image, bgp image.Point) int {
+	src = Next()
 	if bg == nil {
 		return StringNBG(dst, p, src, sp, ft, s)
 	}
@@ -44,6 +45,7 @@ func StringNBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, f
 		f  Face
 		ok bool
 	)
+	src = Next()
 	if f, ok = ft.(Face); !ok {
 		f = Open(ft)
 	}
@@ -66,6 +68,7 @@ func canCache(f image.Image, b image.Image) (fg, bg color.Color, ok bool) {
 }
 
 func runeBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft Face, s []byte, bg image.Image, bgp image.Point) int {
+	src = Next()
 	p.Y += ft.Height()
 	for _, b := range string(s) {
 		dr, mask, maskp, advance, _ := ft.Glyph(fixed.P(p.X, p.Y), b)
@@ -76,6 +79,8 @@ func runeBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft F
 	return p.X
 }
 func staticRuneBG(dst draw.Image, p image.Point, ft Cache, s []byte, fg, bg color.Color) int {
+	Next()
+	fg = rainbow
 	r := image.Rectangle{p, p}
 	r.Max.Y += ft.Dy()
 
@@ -90,6 +95,7 @@ func staticRuneBG(dst draw.Image, p image.Point, ft Cache, s []byte, fg, bg colo
 }
 
 func stringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft Face, s []byte, bg image.Image, bgp image.Point) int {
+	src = Next()
 	p.Y += ft.Height()
 	for _, b := range s {
 		dr, mask, maskp, advance, _ := ft.Glyph(fixed.P(p.X, p.Y), rune(b))
@@ -114,68 +120,30 @@ func staticStringBG(dst draw.Image, p image.Point, ft Cache, s []byte, fg, bg co
 	return r.Min.X - p.X
 }
 
-/*
-func StringBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft *Font, s []byte, bg image.Image, bgp image.Point) int {
-	for _, b := range s {
-		mask := ft.Char(b)
-		if mask == nil {
-			panic("StringBG")
-		}
-		r := mask.Bounds()
-		//draw.Draw(dst, r.Add(p), bg, bgp, draw.Src)
-		draw.DrawMask(dst, r.Add(p), src, sp, mask, mask.Bounds().Min, draw.Over)
-		p.X += r.Dx()
-	}
-	return p.X
+var rainbow = color.RGBA{255, 0, 0, 255}
+
+func Next() *image.Uniform {
+	rainbow = nextcolor(rainbow)
+	return image.NewUniform(rainbow)
 }
 
-func StringNBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft *Font, s []byte) int {
-	for _, b := range s {
-		mask := ft.Char(b)
-		if mask == nil {
-			panic("StringBG")
-		}
-		r := mask.Bounds()
-		draw.DrawMask(dst, r.Add(p), src, sp, mask, mask.Bounds().Min, draw.Over)
-		p.X += r.Dx()
+// nextcolor steps through a gradient
+func nextcolor(c color.RGBA) color.RGBA {
+	switch {
+	case c.R == 255 && c.G == 0 && c.B == 0:
+		c.G += 25
+	case c.R == 255 && c.G != 255 && c.B == 0:
+		c.G += 25
+	case c.G == 255 && c.R != 0:
+		c.R -= 25
+	case c.R == 0 && c.B != 255:
+		c.B += 25
+	case c.B == 255 && c.G != 0:
+		c.G -= 25
+	case c.G == 0 && c.R != 255:
+		c.R += 25
+	default:
+		c.B -= 25
 	}
-	return p.X
+	return c
 }
-
-func RuneBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft *Font, s []byte, bg image.Image, bgp image.Point) int {
-	p.Y += ft.Size()
-	for {
-		b, size := utf8.DecodeRune(s)
-		dr, mask, maskp, advance, ok := ft.Glyph(fixed.P(p.X, p.Y), b)
-		if !ok {
-			panic("RuneBG")
-		}
-		//draw.Draw(dst, dr, bg, bgp, draw.Src)
-		draw.DrawMask(dst, dr, src, sp, mask, maskp, draw.Over)
-		p.X += Fix(advance)
-		if len(s)-size == 0 {
-			break
-		}
-		s = s[size:]
-	}
-	return p.X
-}
-
-func RuneNBG(dst draw.Image, p image.Point, src image.Image, sp image.Point, ft *Font, s []byte) int {
-	p.Y += ft.Size()
-	for {
-		b, size := utf8.DecodeRune(s)
-		dr, mask, maskp, advance, ok := ft.Glyph(fixed.P(p.X, p.Y), b)
-		if !ok {
-			panic("RuneBG")
-		}
-		draw.DrawMask(dst, dr, src, sp, mask, maskp, draw.Over)
-		p.X += Fix(advance)
-		if len(s)-size == 0 {
-			break
-		}
-		s = s[size:]
-	}
-	return p.X
-}
-*/
